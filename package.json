@@ -6,6 +6,7 @@
         "clean": "ccweb-add-on-scripts clean",
         "build": "ccweb-add-on-scripts build",
         "start": "ccweb-add-on-scripts start",
+        "dev": "ccweb-add-on-scripts start",
         "package": "ccweb-add-on-scripts package"
     },
     "keywords": [
