@@ -1,12 +1,20 @@
-import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
-import { UIManager } from "./uiManager.js"; // Note the relative path
+import addOnUISdk from "add-on-sdk-ui";
 
-// This is now our main entry point for the UI panel
-addOnUISdk.ready.then(async () => {
-    console.log("A Tad Add-on SDK is ready!");
+// Initialize the UI SDK
+const { app, runtime } = await addOnUISdk.instance;
 
-    const root = document.getElementById("root");
-    const uiManager = new UIManager(root); // This starts our app
-    
-    console.log("UIManager initialized. WelcomeView should be visible.");
+// Wait for the sandbox runtime to be ready
+await runtime.ready();
+
+// Enable the button
+const createButton = document.getElementById("createRectangle");
+createButton.disabled = false;
+
+// Add click event to call the sandbox API
+createButton.addEventListener("click", async () => {
+    try {
+        await runtime.api.createRectangle();
+    } catch (error) {
+        console.error("Failed to create rectangle:", error);
+    }
 });
