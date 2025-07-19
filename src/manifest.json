@@ -1,0 +1,28 @@
+{
+  "id": "a-tad-addon",
+  "version": "1.0.0",
+  "name": {
+    "default": "A Tad Addon"
+  },
+  "description": {
+    "default": "A custom Adobe Express add-on to test and build new features."
+  },
+  "entryPoints": [
+    {
+      "type": "panel",
+      "id": "main-panel",
+      "label": { "default": "A Tad Panel" },
+      "main": "index.html",
+      "documentSandbox": "sandbox/code.js"
+    }
+  ],
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+  "host": {
+    "app": "express",
+    "minVersion": "1.0.0"
+  }
+}
+  
