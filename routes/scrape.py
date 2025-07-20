@@ -1,52 +1,64 @@
-from flask import Flask, request, jsonify
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import WebDriverException
+import requests
+from bs4 import BeautifulSoup
+import re
 
-import json
-import os
+def scrape_url_content(url):
+    """
+    Scrapes the main text content from a given URL.
+    This function is designed to be called by the main app.py server.
 
-app = Flask(__name__)
+    Args:
+        url (str): The URL of the webpage to scrape.
 
-@app.route('/scrape', methods=['POST'])
-def scrape_url():
+    Returns:
+        dict: A dictionary containing either the scraped text content
+              or an error message.
+    """
     try:
-        data = request.get_json()
-        url = data.get('url')
-        if not url:
-            return jsonify({'error': 'URL missing'}), 400
+        # Set headers to mimic a real browser visit
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        print(f"Fetching content from: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        # Raise an exception if the request returned an error (e.g., 404, 500)
+        response.raise_for_status()
+        
+        # Use BeautifulSoup to parse the HTML content
+        soup = BeautifulSoup(response.content, "html.parser")
+        
+        # --- Extracting Main Content ---
+        # A common strategy is to get all text from the <body> tag.
+        # This gives the AI the richest possible context.
+        body_text = soup.body.get_text(separator=' ', strip=True)
+        
+        # Clean up the text: remove multiple spaces and newlines
+        cleaned_text = re.sub(r'\s+', ' ', body_text).strip()
+        
+        print("Successfully scraped text content.")
+        
+        # Return the scraped data in a dictionary
+        return {
+            "success": True,
+            "url": url,
 
-        # Selenium setup
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        driver = webdriver.Chrome(options=chrome_options)
-
-        driver.get(url)
-
-        # Scrape example data
-        page_data = {
-            'title': driver.title,
-            'url': url,
-            'meta_description': driver.find_element('xpath', '//meta[@name="description"]').get_attribute('content')
+            # We return a slice of the text to keep it manageable for the MVP
+            "text_content": cleaned_text[:4000] # Limit to first 4000 characters
         }
 
-        driver.quit()
-
-        # Save to JSON file
-        output_path = os.path.join(os.path.dirname(__file__), "scraped_data.json")
-        with open(output_path, "w") as f:
-            json.dump(page_data, f, indent=2)
-
-        return jsonify(page_data)
-
-    except WebDriverException as e:
-        return jsonify({'error': f'WebDriver failed: {str(e)}'}), 500
+    except requests.exceptions.RequestException as e:
+        error_message = f"Failed to fetch the URL: {e}"
+        print(error_message)
+        return {"success": False, "error": error_message}
     except Exception as e:
-        return jsonify({'error': f'Scraping error: {str(e)}'}), 500
+        error_message = f"An error occurred during scraping: {e}"
+        print(error_message)
+        return {"success": False, "error": error_message}
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
+# Note: The Flask server code has been removed from this file.
+# The main server logic will now live in app.py.
 
 
 
