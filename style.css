@@ -124,3 +124,27 @@
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
   }
+
+
+
+  /* Fullscreen background SVG */
+body {
+    margin: 0;
+    padding: 0;
+    background: url('/assets/your-background.svg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
+  }
+  
+  /* Transparent overlay for text + widgets */
+  .main-content {
+    position: relative;
+    z-index: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.4); /* Optional: soften text area */
+    border-radius: 16px;
+  }
