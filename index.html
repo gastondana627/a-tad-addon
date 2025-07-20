@@ -5,6 +5,85 @@
   <title>A Tad Add-on</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/src/ui/style.css" />
+  <style>
+    /* Inline styles for the floating chat */
+    .floating-chat {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1000;
+    }
+
+    .chat-widget-button {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .chat-widget-button img {
+      width: 36px;
+      height: 36px;
+    }
+
+    .chatbox {
+      position: absolute;
+      bottom: 72px;
+      right: 0;
+      width: 300px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chatbox.active {
+      display: flex;
+    }
+
+    .chat-header {
+      background: #f5f5f5;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .chat-body {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      font-size: 14px;
+    }
+
+    .chat-input {
+      border: none;
+      border-top: 1px solid #eee;
+      padding: 8px 10px;
+      font-size: 14px;
+      width: 100%;
+      outline: none;
+    }
+
+    .close-chat {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <!-- Background SVG -->
@@ -16,7 +95,7 @@
   <div class="app-container">
     <!-- Hero / Branding -->
     <header class="hero-section">
-      <img class="logo" src="/public/assets/ATad_Logo.jpg" alt="A Tad Logo" />
+      <img class="logo" src="/assets/a_tad_logo_bg.png" alt="A Tad Logo" />
       <h1>Welcome to <span class="brand">A Tad</span></h1>
       <p class="tagline">Your Creative Assistant Inside Adobe Express</p>
     </header>
@@ -51,16 +130,14 @@
       </svg>
       <p>Generating Assistant...</p>
     </div>
+  </div>
 
-    <!-- Floating Widget Trigger -->
-    <div class="chat-widget" id="chatWidget">
-      <img src="/public/assets/a_tad_logo_bg.png" alt="Chat Widget Icon" />
-    </div>
-
-        
-
-    <!-- Chatbox -->
-    <div class="chatbox hidden" id="chatBox">
+  <!-- Floating Chat Widget -->
+  <div class="floating-chat">
+    <button id="chat-toggle-btn" class="chat-widget-button">
+      <img src="/assets/a_tad_logo_bg2.png" alt="Chat Widget Icon" />
+    </button>
+    <div id="chatBox" class="chatbox">
       <div class="chat-header">
         <span>A Tad Assistant</span>
         <button class="close-chat" id="closeChat">✖</button>
@@ -72,30 +149,29 @@
     </div>
   </div>
 
+  <!-- Scripts -->
   <script type="module" src="/src/ui/index.js"></script>
   <script>
-    // Assistant widget toggle
-    const chatWidget = document.getElementById('chatWidget');
+    const chatToggle = document.getElementById('chat-toggle-btn');
     const chatBox = document.getElementById('chatBox');
     const closeChat = document.getElementById('closeChat');
     const generateBtn = document.getElementById('generate-btn');
     const animation = document.getElementById('assistant-animation');
 
-    chatWidget.addEventListener('click', () => {
-      chatBox.classList.remove('hidden');
+    chatToggle.addEventListener('click', () => {
+      chatBox.classList.toggle('active');
     });
 
     closeChat.addEventListener('click', () => {
-      chatBox.classList.add('hidden');
+      chatBox.classList.remove('active');
     });
 
     generateBtn.addEventListener('click', () => {
       animation.classList.remove('hidden');
       setTimeout(() => {
         animation.classList.add('hidden');
-        // Display result (stub)
         document.getElementById('result').innerText = 'Here’s your assistant prompt!';
-      }, 3000); // Simulate loading
+      }, 3000);
     });
   </script>
 </body>
