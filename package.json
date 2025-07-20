@@ -1,25 +1,12 @@
 {
     "name": "a-tad-addon",
     "version": "1.0.0",
-    "description": "Adobe Creative Cloud Web Add-on.",
     "scripts": {
-      "vite:dev": "vite",
-      "vite:build": "vite build",
       "dev": "vite",
-      "build": "vite build",
-      "clean": "ccweb-add-on-scripts clean",
-      "package": "ccweb-add-on-scripts package",
-      "start": "ccweb-add-on-scripts start"
+      "build": "vite build && cp manifest.json dist/"
     },
-    "keywords": [
-      "Adobe",
-      "Creative Cloud Web",
-      "Add-on",
-      "panel"
-    ],
+    "dependencies": {},
     "devDependencies": {
-      "@adobe/ccweb-add-on-scripts": "^3.0.0",
-      "@types/adobe__ccweb-add-on-sdk": "^1.3.0",
       "vite": "^6.3.5"
     }
   }
