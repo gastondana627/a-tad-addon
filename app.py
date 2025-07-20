@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from scrape import scrape_url_content
+from routes.scrape import scrape_url_content
 from ai_service import get_ai_response
 
 # Initialize the Flask app
