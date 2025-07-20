@@ -1,0 +1,135 @@
+/* Reset + Layout */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #0F0F1A;
+  color: #FFF;
+  overflow-x: hidden;
+}
+
+.background-svg img {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  top: 0;
+  left: 0;
+  z-index: -10;
+}
+
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Hero / Branding */
+.hero-section {
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.hero-section .logo {
+  width: 140px;
+  margin-bottom: 1rem;
+}
+
+.brand {
+  color: #82F6FF;
+}
+
+.tagline {
+  font-size: 1.2rem;
+  color: #BBB;
+  margin-top: 0.5rem;
+}
+
+/* Inputs + Prompt */
+.quick-input,
+.prompt-generator {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input[type="text"], textarea {
+  padding: 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  background-color: #1C1C2A;
+  color: #FFF;
+  resize: none;
+}
+
+button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  background-color: #82F6FF;
+  color: #0F0F1A;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #5ee6f0;
+}
+
+/* Floating Chat Widget */
+.chat-widget {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.chat-widget img {
+  width: 60px;
+}
+
+/* Chatbox Styles */
+.chatbox {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  width: 300px;
+  background-color: #1C1C2A;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.chatbox.hidden {
+  display: none;
+}
+
+.chat-header {
+  background-color: #0F0F1A;
+  padding: 1rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-body {
+  padding: 1rem;
+  height: 150px;
+  overflow-y: auto;
+}
+
+.chat-input {
+  padding: 1rem;
+  border: none;
+  border-top: 1px solid #333;
+  background-color: #1C1C2A;
+  color: white;
+}
+
