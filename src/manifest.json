@@ -1,28 +1,31 @@
 {
   "id": "a-tad-addon",
+  "name": "A Tad",
   "version": "1.0.0",
-  "name": {
-    "default": "A Tad Addon"
-  },
-  "description": {
-    "default": "A custom Adobe Express add-on to test and build new features."
-  },
-  "entryPoints": [
-    {
-      "type": "panel",
-      "id": "main-panel",
-      "label": { "default": "A Tad Panel" },
-      "main": "index.html",
-      "documentSandbox": "sandbox/code.js"
-    }
-  ],
-  "icons": {
-    "48": "icons/icon-48.png",
-    "96": "icons/icon-96.png"
-  },
+  "manifestVersion": 1,
+  "author": "Your Name or Team",
+  "description": "Create custom sales videos with real data using A Tad and Adobe Express.",
   "host": {
     "app": "express",
     "minVersion": "1.0.0"
-  }
+  },
+  "icons": [
+    {
+      "width": 48,
+      "height": 48,
+      "path": "assets/logo-48.png",
+      "theme": ["lightest", "light", "dark", "darkest"],
+      "scale": [1, 2]
+    }
+  ],
+  "entryPoints": [
+    {
+      "type": "panel",
+      "id": "mainPanel",
+      "label": {
+        "default": "A Tad"
+      },
+      "main": "index.html"
+    }
+  ]
 }
-  
