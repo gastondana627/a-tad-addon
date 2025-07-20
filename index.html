@@ -16,7 +16,7 @@
   <div class="app-container">
     <!-- Hero / Branding -->
     <header class="hero-section">
-      <img class="logo" src="/public/assets/logo-a-tad.svg" alt="A Tad Logo" />
+      <img class="logo" src="/public/assets/ATad_Logo.jpg" alt="A Tad Logo" />
       <h1>Welcome to <span class="brand">A Tad</span></h1>
       <p class="tagline">Your Creative Assistant Inside Adobe Express</p>
     </header>
@@ -36,16 +36,34 @@
       <div id="result"></div>
     </section>
 
-    <!-- Floating Widget Trigger -->
-    <div class="chat-widget">
-      <img src="/public/assets/widget-bubble.svg" alt="Chat Widget Icon" />
+    <!-- Loading Animation -->
+    <div id="assistant-animation" class="hidden">
+      <svg width="80" height="20" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" fill="#6c63ff">
+        <circle cx="15" cy="15" r="15">
+          <animate attributeName="r" from="15" to="15" begin="0s" dur="0.8s" values="15;9;15" calcMode="linear" repeatCount="indefinite" />
+        </circle>
+        <circle cx="60" cy="15" r="9">
+          <animate attributeName="r" from="9" to="9" begin="0.2s" dur="0.8s" values="9;15;9" calcMode="linear" repeatCount="indefinite" />
+        </circle>
+        <circle cx="105" cy="15" r="15">
+          <animate attributeName="r" from="15" to="15" begin="0.4s" dur="0.8s" values="15;9;15" calcMode="linear" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <p>Generating Assistant...</p>
     </div>
 
+    <!-- Floating Widget Trigger -->
+    <div class="chat-widget" id="chatWidget">
+      <img src="/public/assets/a_tad_logo_bg.png" alt="Chat Widget Icon" />
+    </div>
+
+        
+
     <!-- Chatbox -->
-    <div class="chatbox hidden">
+    <div class="chatbox hidden" id="chatBox">
       <div class="chat-header">
         <span>A Tad Assistant</span>
-        <button class="close-chat">✖</button>
+        <button class="close-chat" id="closeChat">✖</button>
       </div>
       <div class="chat-body">
         <p>Hello! Ask me anything about your project.</p>
@@ -55,8 +73,30 @@
   </div>
 
   <script type="module" src="/src/ui/index.js"></script>
+  <script>
+    // Assistant widget toggle
+    const chatWidget = document.getElementById('chatWidget');
+    const chatBox = document.getElementById('chatBox');
+    const closeChat = document.getElementById('closeChat');
+    const generateBtn = document.getElementById('generate-btn');
+    const animation = document.getElementById('assistant-animation');
+
+    chatWidget.addEventListener('click', () => {
+      chatBox.classList.remove('hidden');
+    });
+
+    closeChat.addEventListener('click', () => {
+      chatBox.classList.add('hidden');
+    });
+
+    generateBtn.addEventListener('click', () => {
+      animation.classList.remove('hidden');
+      setTimeout(() => {
+        animation.classList.add('hidden');
+        // Display result (stub)
+        document.getElementById('result').innerText = 'Here’s your assistant prompt!';
+      }, 3000); // Simulate loading
+    });
+  </script>
 </body>
 </html>
-
-
-

@@ -133,3 +133,60 @@ button:hover {
   color: white;
 }
 
+.bottom-logo {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 100px;
+  height: auto;
+  opacity: 0.9;
+  z-index: 10;
+}
+
+
+.hidden {
+  display: none;
+}
+
+#assistant-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 1rem;
+  z-index: 999;
+}
+
+
+
+.assistant-animation {
+  position: fixed;
+  bottom: 120px;
+  right: 20px;
+  z-index: 999;
+  width: 60px;
+  height: 60px;
+  background-color: transparent;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.assistant-animation img {
+  width: 100%;
+  height: auto;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
