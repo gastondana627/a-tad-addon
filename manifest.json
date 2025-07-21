@@ -1,0 +1,21 @@
+{
+  "id": "a-tad-addon",
+  "name": "A Tad",
+  "version": "1.0.0",
+  "description": "Create custom sales videos with real data using A Tad and Adobe Express.",
+  "host": {
+    "app": "Adobe Express",
+    "minVersion": "12.0"
+  },
+  "sandbox": "sandbox/code.js",
+  "entryPoints": [
+    {
+      "type": "panel",
+      "id": "mainPanel",
+      "label": {
+        "default": "A Tad"
+      },
+      "main": "index.html"
+    }
+  ]
+}
