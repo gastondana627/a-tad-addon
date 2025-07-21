@@ -17,4 +17,17 @@ key.pem
 # The local dev directory for Vite or custom work
 code-playground/
 
+# Byte-compiled / cache files
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# Node
+node_modules/
+dist/
+
+# MacOS system files
+.DS_Store
 
