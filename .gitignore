@@ -8,3 +8,13 @@ node_modules/
 
 # Environment Variables
 .env
+
+
+# SSL certificate/private key (VERY sensitive)
+cert.pem
+key.pem
+
+# The local dev directory for Vite or custom work
+code-playground/
+
+

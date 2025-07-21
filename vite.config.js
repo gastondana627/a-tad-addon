@@ -1,17 +1,8 @@
 import { defineConfig } from 'vite';
 import path from 'path';
-import basicSsl from '@vitejs/plugin-basic-ssl';
 
 export default defineConfig({
   root: './',
-  plugins: [
-    basicSsl()
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
@@ -22,9 +13,14 @@ export default defineConfig({
     },
   },
   server: {
-    https: true,
-    port: 5173,
+    https: {
+      key: './key.pem',
+      cert: './cert.pem',
+    },
+    port: 5241, // <-- SET TO THE DEFAULT ADOBE PORT
     open: true,
     strictPort: true,
-  }
+  },
 });
+
+

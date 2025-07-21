@@ -48,6 +48,16 @@ if __name__ == "__main__":
     app.run(debug=True, port=5000)
 
 
+@app.route("/chat", methods=["POST"])
+def handle_direct_chat():
+    data = request.get_json()
+    prompt = data.get("prompt")
+    if not prompt:
+        return jsonify({"success": False, "error": "Prompt is required"}), 400
+
+    from ai_service import ask_chatbot_direct
+    response = ask_chatbot_direct(prompt)
+    return jsonify(response)
 
 
 

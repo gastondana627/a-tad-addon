@@ -45,3 +45,8 @@ def get_ai_response(scraped_text, user_prompt):
         error_message = f"An error occurred with the OpenAI API: {e}"
         print(error_message)
         return {"success": False, "error": error_message}
+    
+
+
+
+    

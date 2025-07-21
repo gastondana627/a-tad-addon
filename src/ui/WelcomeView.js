@@ -22,9 +22,3 @@ export function WelcomeView(onConnect) {
 
     return view;
 }
-
-
-
-
-
-

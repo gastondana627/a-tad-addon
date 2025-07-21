@@ -86,16 +86,12 @@
   </style>
 </head>
 <body>
-  <!-- Background SVG -->
-  <div class="background-svg">
-    <img src="/public/assets/bg-landing.svg" alt="Background Design" />
-  </div>
 
   <!-- Main App Container -->
   <div class="app-container">
     <!-- Hero / Branding -->
     <header class="hero-section">
-      <img class="logo" src="/assets/a_tad_logo_bg.png" alt="A Tad Logo" />
+      <img class="logo" src="https://a-tad.netlify.app/assets/a_tad_logo_bg.png" alt="A Tad Logo" />
       <h1>Welcome to <span class="brand">A Tad</span></h1>
       <p class="tagline">Your Creative Assistant Inside Adobe Express</p>
     </header>
@@ -135,7 +131,7 @@
   <!-- Floating Chat Widget -->
   <div class="floating-chat">
     <button id="chat-toggle-btn" class="chat-widget-button">
-      <img src="/assets/a_tad_logo_bg2.png" alt="Chat Widget Icon" />
+      <img src="/public/assets/a_tad_logo_bg2.png" alt="Chat Widget Icon" />
     </button>
     <div id="chatBox" class="chatbox">
       <div class="chat-header">
@@ -176,5 +172,3 @@
   </script>
 </body>
 </html>
-
-
