@@ -1,46 +1,63 @@
 import os
-import openai
+from openai import OpenAI
+from dotenv import load_dotenv
 
-# Ensure API key is set as an environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Load environment variables from the .env file
+load_dotenv()
 
-def get_ai_response(context_text, user_prompt):
+# Initialize the OpenAI client with your API key
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def get_ai_response(scraped_text, user_prompt):
     """
-    Combines scraped content with a user prompt and returns AI response.
+    Takes scraped text and a user prompt, sends them to OpenAI,
+    and returns the AI's response.
     """
     try:
-        system_msg = f"The following is content scraped from a URL:\n\n{context_text}"
-        user_msg = user_prompt
+        print("Sending contextual request to OpenAI...")
 
-        response = openai.ChatCompletion.create(
+        system_prompt = "You are an expert content creator and data analyst. Based on the following text from a website, answer the user's prompt."
+
+        completion = client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": system_msg},
-                {"role": "user", "content": user_msg}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Here is the text from the website: '{scraped_text}'"},
+                {"role": "user", "content": f"Now, please fulfill this request: '{user_prompt}'"}
             ]
         )
 
-        answer = response.choices[0].message.content.strip()
-        return {"success": True, "response": answer}
+        ai_response = completion.choices[0].message.content.strip()
+        print("OpenAI response received.")
+        return {"success": True, "response": ai_response}
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        error_message = f"An error occurred with the OpenAI API: {e}"
+        print(error_message)
+        return {"success": False, "error": error_message}
+
 
 def ask_chatbot_direct(prompt):
     """
-    Sends a direct prompt to the chatbot without scraped context.
+    Handles simple chatbot-style prompts without scraped website content.
     """
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
+        print("Sending direct prompt to OpenAI...")
+
+        completion = client.chat.completions.create(
+            model="gpt-4",  # or "gpt-4o" / "gpt-3.5-turbo"
             messages=[
                 {"role": "user", "content": prompt}
             ]
         )
-        answer = response.choices[0].message.content.strip()
-        return {"success": True, "response": answer}
+
+        ai_response = completion.choices[0].message.content.strip()
+        print("OpenAI chatbot response received.")
+        return {"success": True, "response": ai_response}
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        error_message = f"An error occurred with the OpenAI API: {e}"
+        print(error_message)
+        return {"success": False, "error": error_message}
 
 

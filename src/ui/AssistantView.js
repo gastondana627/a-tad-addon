@@ -34,3 +34,6 @@ export function AssistantView(onSendMessage) {
 
     return view;
 }
+
+
+

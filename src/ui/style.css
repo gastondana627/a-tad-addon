@@ -251,3 +251,10 @@ button:hover {
   flex-shrink: 0;
   width: 80px;
 }
+
+
+
+.chat-history { max-height: 60vh; overflow-y: auto; }
+.message.user { text-align: right; color: #1a7dfb; }
+.message.assistant { text-align: left; color: #444; }
+.chat-input-area { display: flex; gap: 8px; }
