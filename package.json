@@ -2,11 +2,16 @@
     "name": "a-tad-addon",
     "version": "1.0.0",
     "scripts": {
-      "dev": "vite",
-      "build": "vite build && cp manifest.json dist/"
+        "dev": "vite",
+        "build": "vite build && cp manifest.json dist/"
     },
-    "dependencies": {},
     "devDependencies": {
-      "vite": "^6.3.5"
+        "@vitejs/plugin-basic-ssl": "^2.1.0",
+        "vite": "^6.3.5"
+    },
+    "dependencies": {
+        "body-parser": "^2.2.0",
+        "cors": "^2.8.5",
+        "express": "^5.1.0"
     }
-  }
+}

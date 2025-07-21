@@ -25,7 +25,10 @@
       "label": {
         "default": "A Tad"
       },
-      "main": "index.html"
+      "main": "dist/index.html"
     }
   ]
 }
+
+
+

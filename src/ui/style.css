@@ -202,3 +202,52 @@ button:hover {
   opacity: 1;
 }
 
+
+/* ... keep all the existing styles ... */
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.chat-history {
+  flex-grow: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+.message {
+  padding: 8px 12px;
+  border-radius: 18px;
+  max-width: 80%;
+  line-height: 1.4;
+}
+.message.assistant {
+  background-color: #e9e9eb;
+  align-self: flex-start;
+}
+.message.user {
+  background-color: #007aff;
+  color: white;
+  align-self: flex-end;
+}
+.message.error {
+  background-color: #ffdddd;
+  color: #d8000c;
+  align-self: flex-start;
+}
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 10px;
+}
+#promptInput {
+  flex-grow: 1;
+}
+#sendButton {
+  flex-shrink: 0;
+  width: 80px;
+}
