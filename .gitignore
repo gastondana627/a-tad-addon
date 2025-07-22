@@ -1,38 +1,5 @@
-.DS_Store
-dist/
-node_modules/
-
-# Dependencies
-/node_modules
-/dist
-
-# Environment Variables
-.env
-
-
-# SSL certificate/private key (VERY sensitive)
-cert.pem
-key.pem
-
-# The local dev directory for Vite or custom work
-code-playground/
-
-# Byte-compiled / cache files
+venv/
 __pycache__/
-*.pyc
-
-# Environment variables
 .env
-
-# Node
-node_modules/
-dist/
-
-# MacOS system files
 .DS_Store
-
-
-
-
-__pycache__/
-*.pyc
+url_extractors/
