@@ -1,17 +1,20 @@
-Flask==3.1.0
-Flask-Cors==5.0.0
-gunicorn==23.0.0
-openai==1.59.6
+# Core Flask and Server
+Flask==3.0.3
+Flask-Cors==4.0.1
+gunicorn==22.0.0
 python-dotenv==1.0.1
-requests==2.32.3
 
-Flask==3.1.0
-Flask-Cors==5.0.0
-gunicorn==23.0.0
-openai==1.59.6
-python-dotenv==1.0.1
+# Web Scraping & Data Extraction
 requests==2.32.3
-langchain==0.3.15
-chromadb==0.5.23
-pydantic==2.10.1
+beautifulsoup4==4.12.3
+selenium==4.22.0
+webdriver-manager==4.0.1
+colorgram.py==1.2.0
 
+# AI & Vector Store
+openai==1.35.13
+langchain==0.2.11
+chromadb==0.5.4
+
+# Dependency for Langchain
+langchain-openai==0.1.14
