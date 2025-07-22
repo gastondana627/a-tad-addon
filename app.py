@@ -4,30 +4,19 @@ from routes.scrape import scrape_url_content
 from ai_service import get_ai_response, ask_chatbot_direct
 import os
 
-# Initialize the Flask app
 app = Flask(__name__)
-
-# Enable CORS for all origins (safe for dev; restrict in prod if needed)
 CORS(app)
 
-# Optional: Health check endpoint for Render
 @app.route("/health", methods=["GET"])
 def health_check():
     return "Healthy", 200
 
-# --- API Routes ---
-
 @app.route("/")
 def index():
-    """A simple route to confirm the server is running."""
     return "A Tad Python Backend is running!"
 
 @app.route("/api/process-url", methods=['POST'])
 def handle_process_request():
-    """
-    Main endpoint: takes a URL and a prompt,
-    scrapes the content, gets an AI response, and returns it.
-    """
     data = request.json
     url = data.get('url')
     prompt = data.get('prompt')
@@ -50,9 +39,6 @@ def handle_process_request():
 
 @app.route("/chat", methods=["POST"])
 def handle_direct_chat():
-    """
-    Direct chat endpoint where only a prompt is given.
-    """
     data = request.get_json()
     prompt = data.get("prompt")
     if not prompt:
@@ -61,8 +47,6 @@ def handle_direct_chat():
     response = ask_chatbot_direct(prompt)
     return jsonify(response)
 
-# --- Critical block: this lets you run locally AND on Render ---
 if __name__ == "__main__":
-    # Render requires listening on 0.0.0.0 and the PORT env variable
     port = int(os.environ.get("PORT", 5151))
     app.run(host="0.0.0.0", port=port, debug=True)
