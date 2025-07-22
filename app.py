@@ -6,6 +6,7 @@ from ai_service import get_ai_response, ask_chatbot_direct
 
 # --- App Initialization ---
 app = Flask(__name__)
+CORS(app)
 
 # --- UPDATED CORS CONFIGURATION ---
 # This explicitly tells the server to allow requests from your Netlify frontend,
@@ -95,4 +96,3 @@ if __name__ == "__main__":
 
 
 
-        
