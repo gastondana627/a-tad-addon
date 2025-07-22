@@ -1,3 +1,4 @@
+
 // This component renders the main chat interface.
 export function AssistantView(onSendMessage) {
     const view = document.createElement("div");
@@ -14,16 +15,20 @@ export function AssistantView(onSendMessage) {
     `;
 
     const sendButton = view.querySelector("#sendButton");
+    // TEST: Check if the button element is found in the HTML.
+    console.log("Attempting to find Send button:", sendButton); // <-- NEW TEST
+
     const promptInput = view.querySelector("#promptInput");
+    // TEST: Check if the input element is found in the HTML.
+    console.log("Attempting to find Prompt input:", promptInput); // <-- NEW TEST
     
     // This function handles sending the message
     const sendMessage = () => {
-        // STEP 1: Check if the button click is captured
-        console.log("1. AssistantView: sendMessage called."); // <-- ADDED
+        console.log("1. AssistantView: sendMessage called."); 
         const prompt = promptInput.value;
         if (prompt) {
-            onSendMessage(prompt); // Pass the prompt to the UIManager
-            promptInput.value = ""; // Clear the input field
+            onSendMessage(prompt); 
+            promptInput.value = "";
         }
     };
 
@@ -36,4 +41,3 @@ export function AssistantView(onSendMessage) {
 
     return view;
 }
-
