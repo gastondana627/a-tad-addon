@@ -3,8 +3,10 @@ console.log('🚀 A Tad is running!');
 // --- Smart Configuration for API Endpoint ---
 // This block automatically detects if you are running locally or in production/Adobe.
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-// IMPORTANT: Replace 'your-app-name.onrender.com' with your actual Render app URL
-const API_BASE_URL = isLocal ? 'https://localhost:5151' : 'https://a-tad-python-backend.onrender.com'; 
+
+// --- CORRECTED RENDER URL ---
+// This now points to your actual Render backend service.
+const API_BASE_URL = isLocal ? 'https://localhost:5151' : 'https://a-tad-addon.onrender.com'; 
 const API_ENDPOINT = `${API_BASE_URL}/api/process-url`;
 
 console.log(`API requests will be sent to: ${API_ENDPOINT}`);
@@ -79,3 +81,6 @@ if (chatCloseBtn) {
     chatBox.classList.add('hidden');
   });
 }
+
+
+

@@ -1,7 +1,7 @@
 import os
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from routes.scrape import scrape_url_content  # This should now point to your updated scrape.py
+from routes.scrape import scrape_url_content
 from ai_service import get_ai_response, ask_chatbot_direct
 
 # --- App Initialization ---
@@ -30,7 +30,6 @@ def handle_process_request():
     data = request.json
     url = data.get('url')
     prompt = data.get('prompt')
-    # Allows the frontend to specify 'bs4' or 'selenium', defaults to 'bs4' for speed
     parser = data.get('parser', 'bs4') 
 
     if not url or not prompt:
@@ -38,28 +37,23 @@ def handle_process_request():
 
     print(f"🟢 Received request for URL: {url} with parser: {parser}")
     
-    # Calls the updated scrape function from /routes/scrape.py
     scraped_data = scrape_url_content(url, parser) 
     
     if not scraped_data.get("success"):
-        # If scraping fails, return the error from the scraper
         return jsonify(scraped_data), 500
 
-    # The actual metadata is nested under the 'data' key upon success
     extracted_content = scraped_data.get("data")
     
-    # For now, we feed the main body text to the AI.
-    # This can be enhanced later to use title, keywords, etc., for a better prompt.
-    text_to_process = extracted_content.get("body_text", "")
+    # --- UPDATED AI CALL ---
+    # Pass the entire dictionary of extracted content to the AI service
+    # This allows the AI to use title, colors, keywords, etc., for a better response.
+    ai_data = get_ai_response(extracted_content, prompt)
     
-    # Get the AI response using the scraped text
-    ai_data = get_ai_response(text_to_process, prompt)
     if not ai_data.get("success"):
         return jsonify(ai_data), 500
 
     print("✅ Successfully processed request. Returning AI response and scraped data.")
     
-    # Return a comprehensive response including the AI's output and the structured data
     final_response = {
         "success": True,
         "scraped_metadata": extracted_content,
@@ -81,7 +75,21 @@ def handle_direct_chat():
 
 # --- Server Execution ---
 if __name__ == "__main__":
-    # Use the PORT environment variable Render provides, or default to 5151 for local dev
     port = int(os.environ.get("PORT", 5151))
-    # Set debug=False for production environments
-    app.run(host="0.0.0.0", port=port, debug=True)
+    
+    # --- UPDATED SERVER START LOGIC ---
+    # For local development, run with an SSL context to enable HTTPS.
+    # This uses the cert.pem and key.pem files in your project directory.
+    # In production (like on Render), Gunicorn is used, so this block is skipped.
+    if 'RENDER' not in os.environ:
+        # Check if certificate files exist before trying to use them
+        if os.path.exists('cert.pem') and os.path.exists('key.pem'):
+            print("Starting Flask server in local HTTPS mode...")
+            app.run(host="0.0.0.0", port=port, debug=True, ssl_context=('cert.pem', 'key.pem'))
+        else:
+            print("Starting Flask server in local HTTP mode (SSL certs not found)...")
+            app.run(host="0.0.0.0", port=port, debug=True)
+    else:
+        # This part remains for production deployment on Render (which handles SSL)
+        print("Starting Flask server for production (Render)...")
+        app.run(host="0.0.0.0", port=port, debug=False)
