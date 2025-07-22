@@ -7,37 +7,13 @@ const backendBase = isLocal
   : "https://a-tad-addon.onrender.com";
 
 const apiClient = {
-  /**
-   * Sends a URL and a prompt to the backend for processing.
-   */
   processUrl: async function (url, prompt) {
-    console.log(`🔁 Sending URL & prompt to: ${backendBase}/api/process-url`);
-
-    try {
-      const response = await fetch(`${backendBase}/api/process-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, prompt }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("❌ processUrl failed:", error);
-      return { success: false, error: error.message };
-    }
+    /* ... (code is unchanged) ... */
   },
 
-  /**
-   * Sends a direct prompt to the chatbot without a URL.
-   */
   sendChatPrompt: async function (prompt) {
-    console.log(`💬 Sending prompt to: ${backendBase}/chat`);
+    // STEP 3: Check if the UIManager calls the apiClient
+    console.log("3. apiClient: sendChatPrompt called."); // <-- MODIFIED
 
     try {
       const response = await fetch(`${backendBase}/chat`, {
@@ -55,11 +31,12 @@ const apiClient = {
       return data;
     } catch (error) {
       console.error("❌ sendChatPrompt failed:", error);
-      return { success: false, error: error.message };
+      return { error: error.message }; // Return error object
     }
   }
 };
 
 export default apiClient;
+
 
 

@@ -18,6 +18,8 @@ export function AssistantView(onSendMessage) {
     
     // This function handles sending the message
     const sendMessage = () => {
+        // STEP 1: Check if the button click is captured
+        console.log("1. AssistantView: sendMessage called."); // <-- ADDED
         const prompt = promptInput.value;
         if (prompt) {
             onSendMessage(prompt); // Pass the prompt to the UIManager
@@ -34,6 +36,4 @@ export function AssistantView(onSendMessage) {
 
     return view;
 }
-
-
 

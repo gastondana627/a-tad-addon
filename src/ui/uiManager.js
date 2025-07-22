@@ -30,24 +30,27 @@ export class UIManager {
   }
 
   async handlePromptSubmit(prompt) {
+    // STEP 2: Check if the callback reaches the UIManager
+    console.log("2. UIManager: handlePromptSubmit called."); // <-- ADDED
     this.addMessageToChat(prompt, "user");
     this.addMessageToChat("Thinking...", "assistant", true);
 
     let result;
     if (this.url) {
-      // URL-based content + prompt
       result = await apiClient.processUrl(this.url, prompt);
     } else {
-      // Pure chat prompt
       result = await apiClient.sendChatPrompt(prompt);
     }
 
     this.removeThinkingIndicator();
 
-    if (result.success) {
+    // The result from your API on success does not contain a `.success` property.
+    // This checks if a response exists instead.
+    if (result && result.response) { // <-- MODIFIED
       this.addMessageToChat(result.response, "assistant");
     } else {
-      this.addMessageToChat(`❌ Error: ${result.error}`, "assistant error");
+      const errorMessage = result ? result.error : "An unknown error occurred."; // <-- MODIFIED
+      this.addMessageToChat(`❌ Error: ${errorMessage}`, "assistant error");
     }
   }
 
