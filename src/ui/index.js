@@ -1,19 +1,16 @@
 console.log('🚀 A Tad is running!');
 
-// SECTION 1: Handle Quick Input Submission
-const quickInput = document.getElementById('quickInput');
-const submitBtn = document.getElementById('submit-btn');
+// --- Smart Configuration for API Endpoint ---
+// This block automatically detects if you are running locally or in production/Adobe.
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+// IMPORTANT: Replace 'your-app-name.onrender.com' with your actual Render app URL
+const API_BASE_URL = isLocal ? 'https://localhost:5151' : 'https://a-tad-python-backend.onrender.com'; 
+const API_ENDPOINT = `${API_BASE_URL}/api/process-url`;
 
-if (quickInput && submitBtn) {
-  submitBtn.addEventListener('click', () => {
-    const inputValue = quickInput.value.trim();
-    alert(inputValue ? `You typed: ${inputValue}` : '⚠️ Please type something!');
-  });
-} else {
-  console.warn('⚠️ Quick input or submit button not found.');
-}
+console.log(`API requests will be sent to: ${API_ENDPOINT}`);
 
-// SECTION 2: Handle Generate Video (Backend API Call + Animation)
+
+// SECTION 1: Handle Generate Button (Main Application Logic)
 const generateBtn = document.getElementById('generate-btn');
 const urlInput = document.getElementById('urlInput');
 const userPrompt = document.getElementById('userPrompt');
@@ -30,32 +27,43 @@ if (generateBtn && urlInput && userPrompt && resultDiv && assistantAnim) {
       return;
     }
 
-    // START animation
     assistantAnim.classList.remove('hidden');
-    resultDiv.innerText = '⏳ Processing...';
+    resultDiv.innerText = '⏳ Processing... Contacting the creative assistant.';
 
     try {
-      const res = await fetch('http://localhost:5000/scrape', {
+      // The fetch call now uses our smart API_ENDPOINT variable
+      const res = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, prompt })
       });
 
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Server responded with status: ${res.status}`);
+      }
+
       const result = await res.json();
-      resultDiv.innerText = `✅ ${result.message || 'Video generated successfully.'}`;
+
+      if (result.success && result.ai_response) {
+        resultDiv.innerText = result.ai_response;
+        console.log("Scraped Metadata:", result.scraped_metadata);
+      } else {
+        throw new Error(result.error || 'The response from the server was not successful.');
+      }
+
     } catch (err) {
-      console.error('❌ Error from backend:', err);
-      resultDiv.innerText = '❌ Failed to fetch data from server.';
+      console.error('❌ Error processing request:', err);
+      resultDiv.innerText = `❌ An error occurred: ${err.message}`;
     } finally {
-      // END animation
       assistantAnim.classList.add('hidden');
     }
   });
 } else {
-  console.warn('⚠️ Elements for video generation or animation not found.');
+  console.warn('⚠️ One or more elements for the generation flow were not found.');
 }
 
-// SECTION 3: Chat Widget Toggle
+// SECTION 2: Chat Widget Toggle
 const chatIcon = document.querySelector('.chat-widget');
 const chatBox = document.querySelector('.chatbox');
 const chatCloseBtn = document.getElementById('chatbox-close');
