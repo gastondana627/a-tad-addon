@@ -7,14 +7,13 @@ import os
 # Initialize the Flask app
 app = Flask(__name__)
 
-# Enable CORS for all origins (safe for dev - restrict for production if needed)
-CORS(app)  # Or: CORS(app, origins=["https://localhost:5241"])
+# Enable CORS for all origins (safe for dev; restrict in prod if needed)
+CORS(app)
 
 # Optional: Health check endpoint for Render
 @app.route("/health", methods=["GET"])
 def health_check():
     return "Healthy", 200
-
 
 # --- API Routes ---
 
@@ -23,11 +22,10 @@ def index():
     """A simple route to confirm the server is running."""
     return "A Tad Python Backend is running!"
 
-
 @app.route("/api/process-url", methods=['POST'])
 def handle_process_request():
     """
-    This is the main endpoint. It takes a URL and a prompt,
+    Main endpoint: takes a URL and a prompt,
     scrapes the content, gets an AI response, and returns it.
     """
     data = request.json
@@ -50,7 +48,6 @@ def handle_process_request():
     print("✅ Successfully processed request. Returning AI response.")
     return jsonify(ai_data)
 
-
 @app.route("/chat", methods=["POST"])
 def handle_direct_chat():
     """
@@ -64,7 +61,8 @@ def handle_direct_chat():
     response = ask_chatbot_direct(prompt)
     return jsonify(response)
 
-
-# Run the server locally (not used on Render)
+# --- Critical block: this lets you run locally AND on Render ---
 if __name__ == "__main__":
-    app.run(debug=True, port=5151)
+    # Render requires listening on 0.0.0.0 and the PORT env variable
+    port = int(os.environ.get("PORT", 5151))
+    app.run(host="0.0.0.0", port=port, debug=True)
