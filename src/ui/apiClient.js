@@ -1,4 +1,4 @@
-// apiClient.js
+// src/ui/apiClient.js
 
 // 🔍 Detect if we are running locally
 const hostname = window.location.hostname;
@@ -79,3 +79,6 @@ const apiClient = {
 };
 
 export default apiClient;
+
+
+
