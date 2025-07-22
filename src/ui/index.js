@@ -1,15 +1,13 @@
 console.log('🚀 A Tad is running!');
 
 // --- Smart Configuration for API Endpoint ---
-// This block automatically detects if you are running locally or in production/Adobe.
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-// --- CORRECTED RENDER URL ---
-// This now points to your actual Render backend service.
 const API_BASE_URL = isLocal ? 'https://localhost:5151' : 'https://a-tad-addon.onrender.com'; 
 const API_ENDPOINT = `${API_BASE_URL}/api/process-url`;
 
-console.log(`API requests will be sent to: ${API_ENDPOINT}`);
+// --- NEW DEBUGGING LOG ---
+// This will confirm which URL the live site is trying to call.
+console.log(`[DEBUG] API requests will be sent to: ${API_ENDPOINT}`);
 
 
 // SECTION 1: Handle Generate Button (Main Application Logic)
@@ -55,7 +53,9 @@ if (generateBtn && urlInput && userPrompt && resultDiv && assistantAnim) {
       }
 
     } catch (err) {
-      console.error('❌ Error processing request:', err);
+      // --- NEW DEBUGGING LOG ---
+      // This will print the complete, detailed error object for us to inspect.
+      console.error('❌ [DEBUG] Full fetch error object:', err);
       resultDiv.innerText = `❌ An error occurred: ${err.message}`;
     } finally {
       assistantAnim.classList.add('hidden');
@@ -81,6 +81,3 @@ if (chatCloseBtn) {
     chatBox.classList.add('hidden');
   });
 }
-
-
-
