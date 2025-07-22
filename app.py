@@ -92,3 +92,7 @@ if __name__ == "__main__":
         # This part remains for production deployment on Render (which handles SSL)
         print("Starting Flask server for production (Render)...")
         app.run(host="0.0.0.0", port=port, debug=False)
+
+
+
+        

@@ -8,6 +8,21 @@ body, html {
   overflow-x: hidden;
 }
 
+/* ✅ UPDATED: Background image using PNG */
+.background-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  z-index: -10;
+  background-image: url('../../public/assets/a_tad_logo_bg2.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* No longer needed:
 .background-svg img {
   position: absolute;
   width: 100%;
@@ -16,6 +31,7 @@ body, html {
   left: 0;
   z-index: -10;
 }
+*/
 
 .app-container {
   max-width: 900px;
@@ -143,7 +159,6 @@ button:hover {
   z-index: 10;
 }
 
-
 .hidden {
   display: none;
 }
@@ -162,8 +177,6 @@ button:hover {
   border-radius: 1rem;
   z-index: 999;
 }
-
-
 
 .assistant-animation {
   position: fixed;
@@ -191,9 +204,6 @@ button:hover {
   pointer-events: auto;
 }
 
-
-
-
 .fade-in {
   opacity: 0;
   transition: opacity 1s ease-in-out;
@@ -201,9 +211,6 @@ button:hover {
 .fade-in.visible {
   opacity: 1;
 }
-
-
-/* ... keep all the existing styles ... */
 
 .chat-container {
   display: flex;
@@ -252,9 +259,19 @@ button:hover {
   width: 80px;
 }
 
-
-
-.chat-history { max-height: 60vh; overflow-y: auto; }
-.message.user { text-align: right; color: #1a7dfb; }
-.message.assistant { text-align: left; color: #444; }
-.chat-input-area { display: flex; gap: 8px; }
+.chat-history {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.message.user {
+  text-align: right;
+  color: #1a7dfb;
+}
+.message.assistant {
+  text-align: left;
+  color: #444;
+}
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+}
