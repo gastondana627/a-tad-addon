@@ -1,4 +1,4 @@
-// UIManager.js
+// uiManager.js
 
 import apiClient from "./apiClient.js";
 import { WelcomeView } from "./WelcomeView.js";
@@ -24,14 +24,13 @@ export class UIManager {
   }
 
   handleUrlSubmit(url) {
-    console.log(`🌐 URL received: ${url}`);
+    console.log(`🌍 URL received: ${url}`);
     this.url = url;
-    this.showAssistant(); // Switch to chat interface
+    this.showAssistant();
   }
 
   async handlePromptSubmit(prompt) {
-    // STEP 2: Check if the callback reaches the UIManager
-    console.log("2. UIManager: handlePromptSubmit called."); // <-- ADDED
+    console.log("🟣 Prompt submitted:", prompt);
     this.addMessageToChat(prompt, "user");
     this.addMessageToChat("Thinking...", "assistant", true);
 
@@ -44,23 +43,25 @@ export class UIManager {
 
     this.removeThinkingIndicator();
 
-    // The result from your API on success does not contain a `.success` property.
-    // This checks if a response exists instead.
-    if (result && result.response) { // <-- MODIFIED
+    if (result && result.response) {
       this.addMessageToChat(result.response, "assistant");
     } else {
-      const errorMessage = result ? result.error : "An unknown error occurred."; // <-- MODIFIED
-      this.addMessageToChat(`❌ Error: ${errorMessage}`, "assistant error");
+      const errorMessage = result?.error || "Unknown error occurred.";
+      this.addMessageToChat(`❌ ${errorMessage}`, "assistant error");
     }
   }
 
   addMessageToChat(text, sender, isThinking = false) {
     const chatHistory = this.root.querySelector("#chatHistory");
-    if (!chatHistory) return;
+    if (!chatHistory) {
+      console.warn("⚠️ No #chatHistory container found.");
+      return;
+    }
 
     const messageDiv = document.createElement("div");
     messageDiv.className = `message ${sender}`;
     messageDiv.textContent = text;
+
     if (isThinking) {
       messageDiv.id = "thinkingIndicator";
     }
