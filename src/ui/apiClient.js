@@ -1,23 +1,26 @@
 // src/ui/apiClient.js
 
-// 🔍 Detect if we are running locally
+// 🌍 Environment detection
 const hostname = window.location.hostname;
 const isLocalhost =
-  hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"; // IPv6 localhost
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  hostname === "::1"; // IPv6 localhost support
 
-// 🧠 Dynamically set backend base URL based on environment
+// 🔁 Set base URL depending on environment
 const backendBase = isLocalhost
-  ? "http://localhost:5151" // 🚧 Flask running locally
-  : "https://a-tad-addon.onrender.com"; // ✅ Deployed backend (Render)
+  ? "http://localhost:5151" // 🚧 Local Flask backend
+  : "https://a-tad-addon.onrender.com"; // 🚀 Live backend (Render)
 
-// Debug log for clarity
-console.log(`🌎 API Base: ${backendBase}`);
+// 🌐 Log which environment we're using
+console.info(`🌎 Using backend: ${backendBase}`);
 
 const apiClient = {
   /**
-   * Send a URL and a prompt to the backend for AI processing.
-   * @param {string} url - The URL of the page/resource
-   * @param {string} prompt - The user's question or instruction
+   * @function processUrl
+   * Sends a prompt and URL to your AI/chatbot backend for contextual completion
+   * @param {string} url - A webpage or resource URL
+   * @param {string} prompt - The user query
    */
   async processUrl(url, prompt) {
     const endpoint = `${backendBase}/api/process-url`;
@@ -47,8 +50,9 @@ const apiClient = {
   },
 
   /**
-   * Send a direct chatbot-style prompt to the backend.
-   * @param {string} prompt - The prompt or message from the user
+   * @function sendChatPrompt
+   * Sends a direct prompt to your chatbot/AI assistant endpoint
+   * @param {string} prompt - Chat-style query string
    */
   async sendChatPrompt(prompt) {
     const endpoint = `${backendBase}/chat`;
