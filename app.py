@@ -6,8 +6,12 @@ from ai_service import get_ai_response, ask_chatbot_direct
 
 # --- App Initialization ---
 app = Flask(__name__)
-# Allow all origins for development; you might want to restrict this in production
-CORS(app) 
+
+# --- UPDATED CORS CONFIGURATION ---
+# This explicitly tells the server to allow requests from your Netlify frontend,
+# which is necessary for the live production site to work.
+CORS(app, resources={r"/api/*": {"origins": "https://a-tad.netlify.app"}, r"/chat": {"origins": "https://a-tad.netlify.app"}})
+
 
 # --- Basic Health and Index Routes ---
 @app.route("/health", methods=["GET"])
@@ -44,9 +48,7 @@ def handle_process_request():
 
     extracted_content = scraped_data.get("data")
     
-    # --- UPDATED AI CALL ---
     # Pass the entire dictionary of extracted content to the AI service
-    # This allows the AI to use title, colors, keywords, etc., for a better response.
     ai_data = get_ai_response(extracted_content, prompt)
     
     if not ai_data.get("success"):
@@ -77,12 +79,9 @@ def handle_direct_chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5151))
     
-    # --- UPDATED SERVER START LOGIC ---
     # For local development, run with an SSL context to enable HTTPS.
-    # This uses the cert.pem and key.pem files in your project directory.
     # In production (like on Render), Gunicorn is used, so this block is skipped.
     if 'RENDER' not in os.environ:
-        # Check if certificate files exist before trying to use them
         if os.path.exists('cert.pem') and os.path.exists('key.pem'):
             print("Starting Flask server in local HTTPS mode...")
             app.run(host="0.0.0.0", port=port, debug=True, ssl_context=('cert.pem', 'key.pem'))
