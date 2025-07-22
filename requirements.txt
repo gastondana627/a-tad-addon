@@ -358,3 +358,9 @@ gunicorn
 openai
 flask-cors
 # ...any additional dependencies you use
+
+Flask
+flask-cors
+openai
+python-dotenv
+gunicorn
