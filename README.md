@@ -132,6 +132,12 @@ Render is preferred for quick deployment of both frontend and backend.
 	•	Log analysis sessions for future insights.
 	•	Deploy frontend and backend as a unified Render project.
 
+
+
+Remember 
+Terminal 1: FrontEnd -> python3 app.py
+Terminal 2: Backend -> npm run dev
+Terminal 3: Do Updates, commits, and tests etc. 
 ⸻
 
 👨‍💻 Author
