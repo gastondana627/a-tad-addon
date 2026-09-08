@@ -6,12 +6,29 @@ from ai_service import get_ai_response, ask_chatbot_direct
 
 # --- App Initialization ---
 app = Flask(__name__)
-CORS(app)
 
-# --- UPDATED CORS CONFIGURATION ---
-# This explicitly tells the server to allow requests from your Netlify frontend,
-# which is necessary for the live production site to work.
-CORS(app, resources={r"/api/*": {"origins": "https://a-tad.netlify.app"}, r"/chat": {"origins": "https://a-tad.netlify.app"}})
+# Allow requests from Adobe Express (localhost dev) and the Netlify production frontend.
+# Adobe Express add-on iframes are served from express.adobe.com origins.
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "https://a-tad.netlify.app",
+            "https://localhost:5241",
+            "http://localhost:5241",
+            "https://new.express.adobe.com",
+            "https://express.adobe.com",
+        ]
+    },
+    r"/chat": {
+        "origins": [
+            "https://a-tad.netlify.app",
+            "https://localhost:5241",
+            "http://localhost:5241",
+            "https://new.express.adobe.com",
+            "https://express.adobe.com",
+        ]
+    }
+})
 
 
 # --- Basic Health and Index Routes ---

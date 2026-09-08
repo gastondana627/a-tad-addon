@@ -1,83 +1,29 @@
-console.log('🚀 A Tad is running!');
+/**
+ * index.js
+ * Entry point for the A Tad Adobe Express add-on panel.
+ * Boots the UIManager and connects to the document sandbox.
+ */
+import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
+import { UIManager } from "./uiManager.js";
 
-// --- Smart Configuration for API Endpoint ---
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE_URL = isLocal ? 'https://localhost:5151' : 'https://a-tad-addon.onrender.com'; 
-const API_ENDPOINT = `${API_BASE_URL}/api/process-url`;
+let uiManager = null;
 
-// --- NEW DEBUGGING LOG ---
-// This will confirm which URL the live site is trying to call.
-console.log(`[DEBUG] API requests will be sent to: ${API_ENDPOINT}`);
+addOnUISdk.ready.then(async () => {
+  console.log("✅ A Tad: Add-on SDK ready");
 
+  const root = document.getElementById("app");
 
-// SECTION 1: Handle Generate Button (Main Application Logic)
-const generateBtn = document.getElementById('generate-btn');
-const urlInput = document.getElementById('urlInput');
-const userPrompt = document.getElementById('userPrompt');
-const resultDiv = document.getElementById('result');
-const assistantAnim = document.getElementById('assistant-animation');
+  // Attempt to connect to the document sandbox for canvas operations.
+  // This will only succeed when running inside Adobe Express.
+  let sandboxProxy = null;
+  try {
+    const { runtime } = addOnUISdk.instance;
+    sandboxProxy = await runtime.apiProxy("documentSandbox");
+    console.log("✅ A Tad: Document sandbox connected");
+  } catch (err) {
+    // Running outside Adobe Express (e.g., plain browser) — canvas features disabled
+    console.warn("⚠️ A Tad: Document sandbox unavailable — canvas features disabled", err.message);
+  }
 
-if (generateBtn && urlInput && userPrompt && resultDiv && assistantAnim) {
-  generateBtn.addEventListener('click', async () => {
-    const url = urlInput.value.trim();
-    const prompt = userPrompt.value.trim();
-
-    if (!url || !prompt) {
-      resultDiv.innerText = '🚨 Please provide both a URL and a prompt.';
-      return;
-    }
-
-    assistantAnim.classList.remove('hidden');
-    resultDiv.innerText = '⏳ Processing... Contacting the creative assistant.';
-
-    try {
-      // The fetch call now uses our smart API_ENDPOINT variable
-      const res = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, prompt })
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Server responded with status: ${res.status}`);
-      }
-
-      const result = await res.json();
-
-      if (result.success && result.ai_response) {
-        resultDiv.innerText = result.ai_response;
-        console.log("Scraped Metadata:", result.scraped_metadata);
-      } else {
-        throw new Error(result.error || 'The response from the server was not successful.');
-      }
-
-    } catch (err) {
-      // --- NEW DEBUGGING LOG ---
-      // This will print the complete, detailed error object for us to inspect.
-      console.error('❌ [DEBUG] Full fetch error object:', err);
-      resultDiv.innerText = `❌ An error occurred: ${err.message}`;
-    } finally {
-      assistantAnim.classList.add('hidden');
-    }
-  });
-} else {
-  console.warn('⚠️ One or more elements for the generation flow were not found.');
-}
-
-// SECTION 2: Chat Widget Toggle
-const chatIcon = document.querySelector('.chat-widget');
-const chatBox = document.querySelector('.chatbox');
-const chatCloseBtn = document.getElementById('chatbox-close');
-
-if (chatIcon && chatBox) {
-  chatIcon.addEventListener('click', () => {
-    chatBox.classList.remove('hidden');
-  });
-}
-
-if (chatCloseBtn) {
-  chatCloseBtn.addEventListener('click', () => {
-    chatBox.classList.add('hidden');
-  });
-}
+  uiManager = new UIManager(root, sandboxProxy);
+});

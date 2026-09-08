@@ -15,11 +15,8 @@
     {
       "type": "panel",
       "id": "mainPanel",
-      "label": {
-        "default": "A Tad"
-      },
       "main": "index.html",
-      "documentSandbox": "src/sandbox/code.js"
+      "documentSandbox": "sandbox/code.js"
     }
   ]
 }

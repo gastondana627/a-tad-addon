@@ -1,15 +1,17 @@
 {
-    "name": "a-tad-addon",
-    "version": "1.0.0",
-    "description": "An Adobe Express Add-on that uses AI to generate on-brand designs from a URL.",
-    "scripts": {
-      "dev": "vite",
-      "build": "vite build",
-      "preview": "vite preview"
-    },
-    "devDependencies": {
-      "vite": "^6.3.5",
-      "@vitejs/plugin-basic-ssl": "^2.1.0"
-    }
+  "name": "a-tad-addon",
+  "version": "1.0.0",
+  "description": "An Adobe Express Add-on that uses AI to generate on-brand designs from a URL.",
+  "scripts": {
+    "start": "ccweb-add-on-scripts start",
+    "build": "ccweb-add-on-scripts build",
+    "build:netlify": "vite build",
+    "package": "ccweb-add-on-scripts package",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@adobe/ccweb-add-on-scripts": "^3.10.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
+    "vite": "^6.3.5"
   }
-  
+}

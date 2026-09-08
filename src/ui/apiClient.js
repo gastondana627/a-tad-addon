@@ -1,88 +1,79 @@
-// src/ui/apiClient.js
+/**
+ * apiClient.js
+ * HTTP abstraction layer for the A Tad add-on.
+ * Auto-detects localhost vs production backend.
+ */
 
-// 🌍 Environment detection
-const hostname = window.location.hostname;
 const isLocalhost =
-  hostname === "localhost" ||
-  hostname === "127.0.0.1" ||
-  hostname === "::1"; // IPv6 localhost support
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1" ||
+  window.location.hostname === "::1";
 
-// 🔁 Set base URL depending on environment
-const backendBase = isLocalhost
-  ? "http://localhost:5151" // 🚧 Local Flask backend
-  : "https://a-tad-addon.onrender.com"; // 🚀 Live backend (Render)
+// Local Flask backend uses HTTPS (self-signed cert) on port 5151
+const BACKEND = isLocalhost
+  ? "https://localhost:5151"
+  : "https://a-tad-addon.onrender.com";
 
-// 🌐 Log which environment we're using
-console.info(`🌎 Using backend: ${backendBase}`);
+console.info(`🌎 A Tad backend: ${BACKEND}`);
 
 const apiClient = {
   /**
-   * @function processUrl
-   * Sends a prompt and URL to your AI/chatbot backend for contextual completion
-   * @param {string} url - A webpage or resource URL
-   * @param {string} prompt - The user query
+   * processUrl
+   * Scrapes a URL and runs the user prompt through GPT-4o with full brand context.
+   * Returns { success, ai_response, scraped_metadata } on success.
    */
   async processUrl(url, prompt) {
-    const endpoint = `${backendBase}/api/process-url`;
-    console.log(`🔁 Sending processUrl → ${endpoint}`);
-
     try {
-      const response = await fetch(endpoint, {
+      const res = await fetch(`${BACKEND}/api/process-url`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, prompt }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.error || `HTTP ${response.status}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        return { success: false, error: data?.error || `HTTP ${res.status}` };
       }
 
-      const data = await response.json();
-      console.log("✅ processUrl success:", data);
-      return data;
-    } catch (error) {
-      console.error("❌ processUrl failed:", error);
-      return { success: false, error: error.message };
+      // Normalize response — backend returns ai_response at top level
+      return {
+        success: true,
+        ai_response: data.ai_response,
+        scraped_metadata: data.scraped_metadata,
+      };
+    } catch (err) {
+      console.error("❌ processUrl error:", err);
+      // Friendly message for self-signed cert rejection
+      const msg = err.message.includes("Failed to fetch")
+        ? `Cannot reach backend. If running locally, open ${BACKEND}/health in your browser and accept the certificate.`
+        : err.message;
+      return { success: false, error: msg };
     }
   },
 
   /**
-   * @function sendChatPrompt
-   * Sends a direct prompt to your chatbot/AI assistant endpoint
-   * @param {string} prompt - Chat-style query string
+   * sendChatPrompt
+   * Direct prompt with no URL context.
    */
   async sendChatPrompt(prompt) {
-    const endpoint = `${backendBase}/chat`;
-    console.log(`💬 Sending sendChatPrompt → ${endpoint}`);
-
     try {
-      const response = await fetch(endpoint, {
+      const res = await fetch(`${BACKEND}/chat`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.error || `HTTP ${response.status}`);
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data?.error || `HTTP ${res.status}` };
       }
-
-      const data = await response.json();
-      console.log("✅ sendChatPrompt success:", data);
-      return data;
-    } catch (error) {
-      console.error("❌ sendChatPrompt failed:", error);
-      return { success: false, error: error.message };
+      return { success: true, ai_response: data.response };
+    } catch (err) {
+      console.error("❌ sendChatPrompt error:", err);
+      return { success: false, error: err.message };
     }
   },
 };
 
 export default apiClient;
-
-
-
