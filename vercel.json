@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build:netlify",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
