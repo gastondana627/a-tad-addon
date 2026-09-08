@@ -1,29 +1,58 @@
 /**
  * index.js
- * Entry point for the A Tad Adobe Express add-on panel.
- * Boots the UIManager and connects to the document sandbox.
+ * Entry point for the A Tad panel.
+ * Works both inside Adobe Express (add-on mode) and as a standalone web app.
  */
-import addOnUISdk from "https://new.express.adobe.com/static/add-on-sdk/sdk.js";
 import { UIManager } from "./uiManager.js";
 
-let uiManager = null;
+const root = document.getElementById("app");
 
-addOnUISdk.ready.then(async () => {
-  console.log("✅ A Tad: Add-on SDK ready");
+/**
+ * Boot the UI with an optional sandbox proxy for canvas operations.
+ * sandboxProxy is only available inside Adobe Express.
+ */
+function boot(sandboxProxy = null) {
+  new UIManager(root, sandboxProxy);
+}
 
-  const root = document.getElementById("app");
+/**
+ * Detect whether we're running inside Adobe Express by checking
+ * if the SDK script is available on the page. Adobe Express injects
+ * the SDK as a module — outside Express it either 403s or times out.
+ */
+const isInsideExpress =
+  window.location.hostname !== "localhost" &&
+  window.location.hostname !== "127.0.0.1" &&
+  (window.location.ancestorOrigins?.contains?.("https://new.express.adobe.com") ||
+   window.location.ancestorOrigins?.contains?.("https://express.adobe.com") ||
+   // fallback: check if we're in an iframe
+   window.self !== window.top);
 
-  // Attempt to connect to the document sandbox for canvas operations.
-  // This will only succeed when running inside Adobe Express.
-  let sandboxProxy = null;
-  try {
-    const { runtime } = addOnUISdk.instance;
-    sandboxProxy = await runtime.apiProxy("documentSandbox");
-    console.log("✅ A Tad: Document sandbox connected");
-  } catch (err) {
-    // Running outside Adobe Express (e.g., plain browser) — canvas features disabled
-    console.warn("⚠️ A Tad: Document sandbox unavailable — canvas features disabled", err.message);
-  }
+if (isInsideExpress) {
+  // Running inside Adobe Express — load SDK and connect to sandbox
+  import("https://new.express.adobe.com/static/add-on-sdk/sdk.js")
+    .then(async (module) => {
+      const addOnUISdk = module.default;
+      await addOnUISdk.ready;
+      console.log("✅ A Tad: Add-on SDK ready");
 
-  uiManager = new UIManager(root, sandboxProxy);
-});
+      let sandboxProxy = null;
+      try {
+        const { runtime } = addOnUISdk.instance;
+        sandboxProxy = await runtime.apiProxy("documentSandbox");
+        console.log("✅ A Tad: Document sandbox connected");
+      } catch (err) {
+        console.warn("⚠️ A Tad: Sandbox unavailable:", err.message);
+      }
+
+      boot(sandboxProxy);
+    })
+    .catch((err) => {
+      console.warn("⚠️ A Tad: SDK failed to load, booting without canvas support", err.message);
+      boot();
+    });
+} else {
+  // Running in browser / Vercel preview — boot immediately, no SDK needed
+  console.info("🌐 A Tad: Running in standalone browser mode");
+  boot();
+}

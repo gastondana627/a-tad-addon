@@ -1,0 +1,15 @@
+# Python backend — not part of the frontend build
+requirements.txt
+app.py
+ai_service.py
+ai_formatter.py
+generate_template.py
+routes/
+url_extractors/
+venv/
+__pycache__/
+*.pyc
+Procfile
+cert.pem
+key.pem
+certs/
