@@ -2,18 +2,27 @@
  * apiClient.js
  * HTTP layer for the A Tad add-on.
  *
- * Local dev  → Flask on https://localhost:5151
- * Production → Vercel serverless functions on https://a-tad-addon.vercel.app
+ * Routing logic:
+ *  - Inside Adobe Express (iframe from localhost:5241 or express.adobe.com)
+ *    → always use Vercel production backend
+ *  - Standalone browser on localhost (Vite dev, direct file open)
+ *    → use local Flask on :5151
+ *  - Anything else (Vercel preview, production URL)
+ *    → use Vercel production backend
  */
 
-const isLocal =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1" ||
-  window.location.hostname === "::1";
+const hostname = window.location.hostname;
+const port     = window.location.port;
 
-const BACKEND = isLocal
-  ? "https://localhost:5151"    // local Flask (npm start + python app.py)
-  : "https://a-tad-addon.vercel.app";  // Vercel serverless
+// "True local" = running as a standalone page in a regular browser on localhost,
+// NOT served by ccweb (port 5241) and NOT inside an Express iframe.
+const isTrueLocalDev =
+  (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") &&
+  port !== "5241";  // port 5241 = ccweb add-on server = use Vercel
+
+const BACKEND = isTrueLocalDev
+  ? "https://localhost:5151"
+  : "https://a-tad-addon.vercel.app";
 
 console.info(`🌎 A Tad backend: ${BACKEND}`);
 
@@ -40,7 +49,7 @@ const apiClient = {
       console.error("❌ analyzeBrand:", err);
       return {
         success: false,
-        error: isLocal
+        error: isTrueLocalDev
           ? `Cannot reach local backend. Make sure Flask is running and visit https://localhost:5151/health to trust the cert.`
           : `Backend error: ${err.message}`,
       };
