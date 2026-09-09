@@ -9,25 +9,20 @@ app = Flask(__name__)
 
 # Allow requests from Adobe Express (localhost dev) and the Netlify production frontend.
 # Adobe Express add-on iframes are served from express.adobe.com origins.
+ALLOWED_ORIGINS = [
+    "https://a-tad.netlify.app",
+    "https://a-tad-addon.vercel.app",
+    "https://localhost:5241",
+    "http://localhost:5241",
+    # Adobe Express iframe origins
+    "https://new.express.adobe.com",
+    "https://express.adobe.com",
+    # Wildcard for any Vercel preview deploy
+]
+
 CORS(app, resources={
-    r"/api/*": {
-        "origins": [
-            "https://a-tad.netlify.app",
-            "https://localhost:5241",
-            "http://localhost:5241",
-            "https://new.express.adobe.com",
-            "https://express.adobe.com",
-        ]
-    },
-    r"/chat": {
-        "origins": [
-            "https://a-tad.netlify.app",
-            "https://localhost:5241",
-            "http://localhost:5241",
-            "https://new.express.adobe.com",
-            "https://express.adobe.com",
-        ]
-    }
+    r"/api/*": {"origins": ALLOWED_ORIGINS},
+    r"/chat":  {"origins": ALLOWED_ORIGINS},
 })
 
 
@@ -80,6 +75,67 @@ def handle_process_request():
         "ai_response": ai_data.get("response")
     }
     return jsonify(final_response)
+
+
+# --- BRAND ANALYSIS: Structured payload for canvas integration ---
+@app.route("/api/brand", methods=['POST'])
+def handle_brand_analysis():
+    """
+    Scrapes a URL and returns a structured brand payload:
+    brandName, colors, headline, subheading — ready for canvas use.
+    """
+    data = request.json
+    url = data.get('url')
+    parser = data.get('parser', 'bs4')
+
+    if not url:
+        return jsonify({"success": False, "error": "URL is required"}), 400
+
+    print(f"🎨 Brand analysis request for: {url}")
+
+    scraped_data = scrape_url_content(url, parser)
+    if not scraped_data.get("success"):
+        return jsonify(scraped_data), 500
+
+    extracted = scraped_data.get("data")
+
+    # Ask GPT-4o to extract structured brand copy
+    brand_prompt = (
+        "Based on this website, extract the following as a JSON object with no extra text:\n"
+        "- brandName: the company or person name\n"
+        "- headline: a short punchy headline (max 10 words)\n"
+        "- subheading: a supporting line (max 20 words)\n"
+        "Return ONLY valid JSON, no markdown, no explanation."
+    )
+
+    ai_data = get_ai_response(extracted, brand_prompt)
+    if not ai_data.get("success"):
+        return jsonify(ai_data), 500
+
+    # Parse the AI JSON response
+    import json, re
+    raw = ai_data.get("response", "{}")
+    # Strip markdown code fences if present
+    raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`").strip()
+    try:
+        brand_copy = json.loads(raw)
+    except Exception:
+        brand_copy = {"brandName": extracted.get("title", ""), "headline": "", "subheading": ""}
+
+    result = {
+        "success": True,
+        "brandUrl": url,
+        "brandName": brand_copy.get("brandName", extracted.get("title", "")),
+        "colors": extracted.get("colors", []),
+        "copy": {
+            "headline": brand_copy.get("headline", ""),
+            "subheading": brand_copy.get("subheading", ""),
+        },
+        "scraped_metadata": extracted,
+    }
+
+    print(f"✅ Brand analysis complete for {url}")
+    return jsonify(result)
 
 # --- Direct Chat Route ---
 @app.route("/chat", methods=["POST"])

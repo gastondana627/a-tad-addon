@@ -16,3 +16,4 @@ dist/
 
 # Ignore old backup project folder
 OLD_A_Tad_addon_backup/
+.vercel

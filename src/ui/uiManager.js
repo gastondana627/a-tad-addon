@@ -10,38 +10,33 @@ import { AssistantView } from "./AssistantView.js";
 export class UIManager {
   constructor(rootElement, sandboxProxy) {
     this.root = rootElement;
-    this.sandbox = sandboxProxy; // Adobe Express document sandbox API
+    this.sandbox = sandboxProxy;
+
+    // Brand state — populated after analyzeBrand()
+    this.brandData = null; // full structured payload from /api/brand
     this.currentUrl = null;
     this.lastAiResponse = null;
-    this.brandColors = [];
     this._currentAssistantView = null;
 
-    this._render(this._buildHeader());
+    this._renderShell();
     this.showWelcome();
   }
 
-  // =============================================
-  // HEADER — always visible
-  // =============================================
+  // ─────────────────────────────────────────
+  // SHELL (header + view slot)
+  // ─────────────────────────────────────────
 
-  _buildHeader() {
-    const header = document.createElement("div");
-    header.className = "panel-header";
-    header.innerHTML = `
-      <div class="panel-header-text">
-        <h1>A Tad</h1>
-        <p>AI Brand Assistant for Adobe Express</p>
+  _renderShell() {
+    this.root.innerHTML = `
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h1>A Tad</h1>
+          <p>AI Brand Assistant for Adobe Express</p>
+        </div>
       </div>
+      <div id="viewSlot" style="display:flex;flex-direction:column;flex:1;overflow:hidden;"></div>
     `;
-    return header;
-  }
-
-  _render(headerEl) {
-    this.root.innerHTML = "";
-    this.root.appendChild(headerEl);
-    this._viewSlot = document.createElement("div");
-    this._viewSlot.style.cssText = "display:flex;flex-direction:column;flex:1;overflow:hidden;";
-    this.root.appendChild(this._viewSlot);
+    this._viewSlot = this.root.querySelector("#viewSlot");
   }
 
   _setView(viewEl) {
@@ -49,159 +44,186 @@ export class UIManager {
     this._viewSlot.appendChild(viewEl);
   }
 
-  // =============================================
+  // ─────────────────────────────────────────
   // VIEWS
-  // =============================================
+  // ─────────────────────────────────────────
 
   showWelcome() {
+    this.brandData = null;
     this.currentUrl = null;
-    this.brandColors = [];
     this.lastAiResponse = null;
     this._currentAssistantView = null;
-
-    const view = WelcomeView((url) => this._handleUrlConnect(url));
-    this._setView(view);
+    this._setView(WelcomeView((url) => this._handleUrlConnect(url)));
   }
 
   showAssistant() {
     const view = AssistantView({
       brandUrl: this.currentUrl,
-      brandColors: this.brandColors,
-      onSendMessage: (prompt) => this._handlePrompt(prompt),
-      onAddText: () => this._handleAddText(),
-      onApplyColors: () => this._handleApplyColors(),
-      onBack: () => this.showWelcome(),
+      brandColors: this.brandData?.colors || [],
+      onSendMessage:    (prompt) => this._handlePrompt(prompt),
+      onAddText:        () => this._handleAddText(),
+      onApplyColors:    () => this._handleApplyColors(),
+      onApplyBrandKit:  () => this._handleApplyBrandKit(),
+      onBack:           () => this.showWelcome(),
     });
     this._currentAssistantView = view;
     this._setView(view);
   }
 
-  // =============================================
-  // EVENT HANDLERS
-  // =============================================
+  // ─────────────────────────────────────────
+  // URL CONNECT — primary brand analysis
+  // ─────────────────────────────────────────
 
   async _handleUrlConnect(url) {
     this.currentUrl = url;
     this.showAssistant();
 
-    // Kick off a first scrape with a default prompt to populate brand colors
-    this._addMessage("Analyzing brand from <strong>" + url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0] + "</strong>…", "assistant thinking");
+    const domain = url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0];
+    this._addMessage(`Analyzing <strong>${domain}</strong>…`, "assistant thinking");
 
-    try {
-      const result = await apiClient.processUrl(url, "Briefly describe this brand in 1 sentence and list its main products or services.");
-      this._removeThinking();
+    const result = await apiClient.analyzeBrand(url);
+    this._removeThinking();
 
-      if (result.success && result.ai_response) {
-        this._addMessage(result.ai_response, "assistant");
-        this.lastAiResponse = result.ai_response;
+    if (!result.success) {
+      this._addMessage(`⚠️ ${result.error}`, "error");
+      return;
+    }
 
-        // Extract colors from scraped metadata
-        if (result.scraped_metadata?.colors?.length) {
-          this.brandColors = result.scraped_metadata.colors;
-          this._currentAssistantView?.updateColors(this.brandColors);
-        }
-        this._currentAssistantView?.enableAddText();
-      } else {
-        this._addMessage(`⚠️ ${result.error || "Could not reach this URL. Try a different one."}`, "error");
-      }
-    } catch (err) {
-      this._removeThinking();
-      this._addMessage(`❌ ${err.message}`, "error");
+    // Store full brand state
+    this.brandData = result;
+
+    // Show brand summary in chat
+    const { brandName, colors, copy } = result;
+    const colorDots = (colors || [])
+      .slice(0, 5)
+      .map(hex => `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${hex};margin-right:3px;"></span>`)
+      .join("");
+
+    this._addMessage(
+      `<strong>${brandName || domain}</strong><br/>` +
+      (copy?.headline ? `${copy.headline}<br/>` : "") +
+      (copy?.subheading ? `<em>${copy.subheading}</em><br/>` : "") +
+      (colors?.length ? `<br/>Brand colors: ${colorDots}` : ""),
+      "assistant"
+    );
+
+    // Update UI with colors
+    if (colors?.length) {
+      this._currentAssistantView?.updateColors(colors);
+    }
+
+    // Seed lastAiResponse with headline so Add Text works immediately
+    if (copy?.headline) {
+      this.lastAiResponse = [copy.headline, copy.subheading].filter(Boolean).join("\n");
+      this._currentAssistantView?.enableAddText();
     }
   }
+
+  // ─────────────────────────────────────────
+  // CHAT — follow-up prompts
+  // ─────────────────────────────────────────
 
   async _handlePrompt(prompt) {
     this._addMessage(prompt, "user");
     this._addMessage("Thinking<span class='loading-dots'></span>", "assistant thinking", true);
 
-    try {
-      const result = await apiClient.processUrl(this.currentUrl, prompt);
-      this._removeThinking();
+    const result = await apiClient.processUrl(this.currentUrl, prompt);
+    this._removeThinking();
 
-      if (result.success && result.ai_response) {
-        this._addMessage(result.ai_response, "assistant");
-        this.lastAiResponse = result.ai_response;
-        this._currentAssistantView?.enableAddText();
+    if (result.success && result.ai_response) {
+      this._addMessage(result.ai_response, "assistant");
+      this.lastAiResponse = result.ai_response;
+      this._currentAssistantView?.enableAddText();
 
-        // Update colors if new ones came back
-        if (result.scraped_metadata?.colors?.length && !this.brandColors.length) {
-          this.brandColors = result.scraped_metadata.colors;
-          this._currentAssistantView?.updateColors(this.brandColors);
-        }
-      } else {
-        this._addMessage(`⚠️ ${result.error || "Something went wrong."}`, "error");
+      // Pick up colors if we didn't get them on the first pass
+      if (result.scraped_metadata?.colors?.length && !this.brandData?.colors?.length) {
+        this.brandData = { ...this.brandData, colors: result.scraped_metadata.colors };
+        this._currentAssistantView?.updateColors(this.brandData.colors);
       }
-    } catch (err) {
-      this._removeThinking();
-      this._addMessage(`❌ ${err.message}`, "error");
+    } else {
+      this._addMessage(`⚠️ ${result.error || "Something went wrong."}`, "error");
     }
   }
 
-  // =============================================
-  // CANVAS ACTIONS (via document sandbox)
-  // =============================================
+  // ─────────────────────────────────────────
+  // CANVAS ACTIONS
+  // ─────────────────────────────────────────
 
   async _handleAddText() {
     if (!this.lastAiResponse) return;
 
     if (!this.sandbox) {
-      this._showToast("⚠️ Canvas not available outside Adobe Express");
+      this._showToast("⚠️ Canvas only available inside Adobe Express");
       return;
     }
 
     try {
-      // Strip HTML tags for clean text on canvas
-      const cleanText = this.lastAiResponse.replace(/<[^>]+>/g, "").trim();
-      await this.sandbox.addTextToCanvas(cleanText);
+      const clean = this.lastAiResponse.replace(/<[^>]+>/g, "").trim();
+      await this.sandbox.addTextToCanvas(clean);
       this._showToast("✅ Text added to canvas!");
     } catch (err) {
-      console.error("addTextToCanvas error:", err);
-      this._showToast("❌ Could not add text to canvas");
+      console.error("addTextToCanvas:", err);
+      this._showToast("❌ Could not add text");
     }
   }
 
   async _handleApplyColors() {
-    if (!this.brandColors.length) return;
+    const colors = this.brandData?.colors;
+    if (!colors?.length) return;
 
     if (!this.sandbox) {
-      this._showToast("⚠️ Canvas not available outside Adobe Express");
+      this._showToast("⚠️ Canvas only available inside Adobe Express");
       return;
     }
 
     try {
-      await this.sandbox.addColorSwatches(this.brandColors.slice(0, 5));
-      this._showToast("🎨 Brand colors added to canvas!");
+      await this.sandbox.addColorSwatches(colors.slice(0, 5));
+      this._showToast("🎨 Brand colors applied!");
     } catch (err) {
-      console.error("addColorSwatches error:", err);
+      console.error("addColorSwatches:", err);
       this._showToast("❌ Could not apply colors");
     }
   }
 
-  // =============================================
+  async _handleApplyBrandKit() {
+    if (!this.brandData) return;
+
+    if (!this.sandbox) {
+      this._showToast("⚠️ Canvas only available inside Adobe Express");
+      return;
+    }
+
+    try {
+      await this.sandbox.applyBrandKit(this.brandData);
+      this._showToast("🚀 Brand kit applied to canvas!");
+    } catch (err) {
+      console.error("applyBrandKit:", err);
+      this._showToast("❌ Could not apply brand kit");
+    }
+  }
+
+  // ─────────────────────────────────────────
   // CHAT HELPERS
-  // =============================================
+  // ─────────────────────────────────────────
 
   _addMessage(html, type, isThinking = false) {
     const chatHistory = this._viewSlot.querySelector("#chatHistory");
     if (!chatHistory) return;
-
     const msg = document.createElement("div");
     msg.className = `message ${type}`;
     msg.innerHTML = html;
     if (isThinking) msg.id = "thinkingMsg";
-
     chatHistory.appendChild(msg);
     chatHistory.scrollTop = chatHistory.scrollHeight;
   }
 
   _removeThinking() {
-    const el = this._viewSlot.querySelector("#thinkingMsg");
-    if (el) el.remove();
+    this._viewSlot.querySelector("#thinkingMsg")?.remove();
   }
 
-  // =============================================
-  // TOAST NOTIFICATION
-  // =============================================
+  // ─────────────────────────────────────────
+  // TOAST
+  // ─────────────────────────────────────────
 
   _showToast(message) {
     let toast = document.getElementById("atad-toast");

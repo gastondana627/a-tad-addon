@@ -4,114 +4,147 @@
  * Exposes canvas operations to the UI panel via runtime.exposeApi().
  */
 import addOnSandboxSdk from "add-on-sdk-document-sandbox";
-import { editor, colorUtils } from "express-document-sdk";
+import { editor } from "express-document-sdk";
 
 const { runtime } = addOnSandboxSdk.instance;
 
-/**
- * Hex string → { red, green, blue, alpha } with values 0–1
- */
+// ─────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────
+
 function hexToColor(hex) {
-  const clean = hex.replace("#", "");
-  const r = parseInt(clean.substring(0, 2), 16) / 255;
-  const g = parseInt(clean.substring(2, 4), 16) / 255;
-  const b = parseInt(clean.substring(4, 6), 16) / 255;
-  return { red: r, green: g, blue: b, alpha: 1 };
+  const c = hex.replace("#", "");
+  return {
+    red:   parseInt(c.substring(0, 2), 16) / 255,
+    green: parseInt(c.substring(2, 4), 16) / 255,
+    blue:  parseInt(c.substring(4, 6), 16) / 255,
+    alpha: 1,
+  };
 }
 
-/**
- * Wrap long text at ~50 chars per line so it fits on canvas
- */
-function wrapText(text, maxLen = 50) {
+function wrapText(text, maxLen = 48) {
   const words = text.split(" ");
   const lines = [];
   let current = "";
   for (const word of words) {
-    if ((current + " " + word).trim().length > maxLen) {
-      lines.push(current.trim());
+    const candidate = current ? `${current} ${word}` : word;
+    if (candidate.length > maxLen) {
+      if (current) lines.push(current);
       current = word;
     } else {
-      current = (current + " " + word).trim();
+      current = candidate;
     }
   }
   if (current) lines.push(current);
   return lines.join("\n");
 }
 
+function createTextNode(text, fontSize, color, x, y) {
+  const node = editor.createText();
+  node.fullContent = {
+    text: wrapText(text.substring(0, 300)),
+    textAttributes: { fontSize, color: hexToColor(color) },
+  };
+  node.translation = { x, y };
+  return node;
+}
+
+// ─────────────────────────────────────────
+// Sandbox API
+// ─────────────────────────────────────────
+
 const sandboxApi = {
+
   /**
    * addTextToCanvas
-   * Places the AI-generated text as a text node on the current page.
+   * Places AI-generated text as a text node at the top of the canvas.
    */
-  addTextToCanvas: (text) => {
+  addTextToCanvas(text) {
     try {
       const parent = editor.context.insertionParent;
-
-      const textNode = editor.createText();
-
-      // Truncate to first 300 chars to keep it readable
-      const displayText = text.length > 300
-        ? wrapText(text.substring(0, 297) + "…")
-        : wrapText(text);
-
-      textNode.fullContent = {
-        text: displayText,
-        textAttributes: {
-          fontSize: 24,
-          color: { red: 0.05, green: 0.05, blue: 0.1, alpha: 1 },
-        },
-      };
-
-      textNode.translation = { x: 40, y: 40 };
-      parent.children.append(textNode);
-
+      const node = createTextNode(text, 22, "#0d0d0d", 40, 40);
+      parent.children.append(node);
       console.log("✅ Text added to canvas");
     } catch (err) {
-      console.error("❌ addTextToCanvas failed:", err);
+      console.error("❌ addTextToCanvas:", err);
       throw err;
     }
   },
 
   /**
    * addColorSwatches
-   * Places colored rectangles on the canvas — one per brand color.
+   * Places colored rectangles (brand palette) on the canvas.
    */
-  addColorSwatches: (hexColors) => {
+  addColorSwatches(hexColors) {
     try {
       const parent = editor.context.insertionParent;
-
-      const swatchSize = 80;
-      const gap = 12;
-      const startX = 40;
-      const startY = 120;
+      const size = 72;
+      const gap = 10;
 
       hexColors.slice(0, 6).forEach((hex, i) => {
         const rect = editor.createRectangle();
-        rect.width = swatchSize;
-        rect.height = swatchSize;
-        rect.translation = {
-          x: startX + i * (swatchSize + gap),
-          y: startY,
-        };
-
-        const color = hexToColor(hex);
-        rect.fill = editor.makeColorFill(color);
-
+        rect.width = size;
+        rect.height = size;
+        rect.translation = { x: 40 + i * (size + gap), y: 140 };
+        rect.fill = editor.makeColorFill(hexToColor(hex));
         parent.children.append(rect);
       });
 
-      console.log(`✅ ${hexColors.length} color swatches added to canvas`);
+      console.log(`✅ ${hexColors.length} swatches added`);
     } catch (err) {
-      console.error("❌ addColorSwatches failed:", err);
+      console.error("❌ addColorSwatches:", err);
       throw err;
     }
   },
 
   /**
-   * ping — used to verify sandbox connection is alive
+   * applyBrandKit
+   * One-shot: places headline, subheading, and color swatches from brand data.
+   * brandData = { brandName, colors, copy: { headline, subheading } }
    */
+  applyBrandKit(brandData) {
+    try {
+      const parent = editor.context.insertionParent;
+      const { brandName, colors, copy } = brandData;
+
+      // Brand name — large
+      if (brandName) {
+        parent.children.append(createTextNode(brandName, 36, "#0d0d0d", 40, 40));
+      }
+
+      // Headline
+      if (copy?.headline) {
+        parent.children.append(createTextNode(copy.headline, 24, "#1a1a2e", 40, 100));
+      }
+
+      // Subheading
+      if (copy?.subheading) {
+        parent.children.append(createTextNode(copy.subheading, 16, "#555577", 40, 150));
+      }
+
+      // Color swatches below
+      if (colors?.length) {
+        const size = 60;
+        const gap = 8;
+        colors.slice(0, 6).forEach((hex, i) => {
+          const rect = editor.createRectangle();
+          rect.width = size;
+          rect.height = size;
+          rect.translation = { x: 40 + i * (size + gap), y: 220 };
+          rect.fill = editor.makeColorFill(hexToColor(hex));
+          parent.children.append(rect);
+        });
+      }
+
+      console.log("✅ Brand kit applied to canvas");
+    } catch (err) {
+      console.error("❌ applyBrandKit:", err);
+      throw err;
+    }
+  },
+
   ping: () => "pong",
 };
 
 runtime.exposeApi(sandboxApi);
-console.log("✅ A Tad sandbox API exposed");
+console.log("✅ A Tad sandbox API ready");
