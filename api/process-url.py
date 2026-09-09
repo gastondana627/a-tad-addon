@@ -3,37 +3,41 @@ api/process-url.py — Vercel serverless function
 POST /api/process-url
 Scrapes a URL and answers a freeform prompt with brand context.
 """
-from http.server import BaseHTTPRequestHandler
 import json
 import sys
 import os
+from http.server import BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _scraper import scrape_url
 from _ai import get_ai_response
 
-ALLOWED_ORIGINS = [
-    "https://a-tad-addon.vercel.app",
-    "https://a-tad.netlify.app",
-    "https://new.express.adobe.com",
-    "https://express.adobe.com",
-    "https://localhost:5241",
-    "http://localhost:5241",
-]
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+}
 
 
 class handler(BaseHTTPRequestHandler):
 
-    def _cors_headers(self):
-        origin = self.headers.get("Origin", "")
-        allow = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
-        self.send_header("Access-Control-Allow-Origin", allow)
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+    def log_message(self, format, *args):
+        pass
+
+    def _send(self, status: int, data: dict):
+        payload = json.dumps(data).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        for k, v in CORS_HEADERS.items():
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(payload)
 
     def do_OPTIONS(self):
         self.send_response(204)
-        self._cors_headers()
+        for k, v in CORS_HEADERS.items():
+            self.send_header(k, v)
         self.end_headers()
 
     def do_POST(self):
@@ -43,34 +47,25 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
 
-        url    = body.get("url", "").strip()
-        prompt = body.get("prompt", "").strip()
+        url    = (body.get("url") or "").strip()
+        prompt = (body.get("prompt") or "").strip()
 
         if not url or not prompt:
-            self._respond(400, {"success": False, "error": "url and prompt are required"})
+            self._send(400, {"success": False, "error": "url and prompt are required"})
             return
 
         scraped = scrape_url(url)
         if not scraped["success"]:
-            self._respond(502, scraped)
+            self._send(502, scraped)
             return
 
         ai = get_ai_response(scraped["data"], prompt)
         if not ai["success"]:
-            self._respond(500, ai)
+            self._send(500, ai)
             return
 
-        self._respond(200, {
+        self._send(200, {
             "success": True,
             "ai_response": ai["response"],
             "scraped_metadata": scraped["data"],
         })
-
-    def _respond(self, status: int, data: dict):
-        payload = json.dumps(data).encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(payload)))
-        self._cors_headers()
-        self.end_headers()
-        self.wfile.write(payload)

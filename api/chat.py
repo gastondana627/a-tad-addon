@@ -1,38 +1,42 @@
 """
 api/chat.py — Vercel serverless function
-POST /api/chat  (replaces /chat on Flask)
+POST /api/chat
 Direct prompt with no URL context.
 """
-from http.server import BaseHTTPRequestHandler
 import json
 import sys
 import os
+from http.server import BaseHTTPRequestHandler
 
 sys.path.insert(0, os.path.dirname(__file__))
 from _ai import ask_direct
 
-ALLOWED_ORIGINS = [
-    "https://a-tad-addon.vercel.app",
-    "https://a-tad.netlify.app",
-    "https://new.express.adobe.com",
-    "https://express.adobe.com",
-    "https://localhost:5241",
-    "http://localhost:5241",
-]
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+}
 
 
 class handler(BaseHTTPRequestHandler):
 
-    def _cors_headers(self):
-        origin = self.headers.get("Origin", "")
-        allow = origin if origin in ALLOWED_ORIGINS else ALLOWED_ORIGINS[0]
-        self.send_header("Access-Control-Allow-Origin", allow)
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+    def log_message(self, format, *args):
+        pass
+
+    def _send(self, status: int, data: dict):
+        payload = json.dumps(data).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        for k, v in CORS_HEADERS.items():
+            self.send_header(k, v)
+        self.end_headers()
+        self.wfile.write(payload)
 
     def do_OPTIONS(self):
         self.send_response(204)
-        self._cors_headers()
+        for k, v in CORS_HEADERS.items():
+            self.send_header(k, v)
         self.end_headers()
 
     def do_POST(self):
@@ -42,19 +46,10 @@ class handler(BaseHTTPRequestHandler):
         except Exception:
             body = {}
 
-        prompt = body.get("prompt", "").strip()
+        prompt = (body.get("prompt") or "").strip()
         if not prompt:
-            self._respond(400, {"success": False, "error": "prompt is required"})
+            self._send(400, {"success": False, "error": "prompt is required"})
             return
 
         result = ask_direct(prompt)
-        self._respond(200 if result["success"] else 500, result)
-
-    def _respond(self, status: int, data: dict):
-        payload = json.dumps(data).encode()
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(payload)))
-        self._cors_headers()
-        self.end_headers()
-        self.wfile.write(payload)
+        self._send(200 if result["success"] else 500, result)
