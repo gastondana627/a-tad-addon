@@ -10,7 +10,10 @@ def _client() -> OpenAI:
     key = os.environ.get("OPENAI_API_KEY")
     if not key:
         raise RuntimeError("OPENAI_API_KEY environment variable is not set")
-    return OpenAI(api_key=key)
+    return OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=key,
+    )
 
 
 def _build_context(scraped: dict) -> str:
@@ -32,7 +35,7 @@ def get_ai_response(scraped: dict, user_prompt: str) -> dict:
     try:
         context = _build_context(scraped)
         completion = _client().chat.completions.create(
-            model="gpt-4o",
+            model="openai/gpt-4o",
             messages=[
                 {
                     "role": "system",
@@ -63,7 +66,7 @@ def get_brand_copy(scraped: dict) -> dict:
     try:
         context = _build_context(scraped)
         completion = _client().chat.completions.create(
-            model="gpt-4o",
+            model="openai/gpt-4o",
             messages=[
                 {
                     "role": "system",
@@ -92,7 +95,7 @@ def ask_direct(prompt: str) -> dict:
     """Direct chat prompt with no URL context."""
     try:
         completion = _client().chat.completions.create(
-            model="gpt-4o",
+            model="openai/gpt-4o",
             messages=[{"role": "user", "content": prompt}],
         )
         return {"success": True, "response": completion.choices[0].message.content.strip()}

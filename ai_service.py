@@ -5,8 +5,11 @@ from dotenv import load_dotenv
 # Load environment variables from the .env file
 load_dotenv()
 
-# Initialize the OpenAI client with your API key
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize the OpenAI client pointed at OpenRouter
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENAI_API_KEY"),
+)
 
 def get_ai_response(extracted_content, user_prompt):
     """
@@ -48,7 +51,7 @@ def get_ai_response(extracted_content, user_prompt):
 
         print("Sending contextual request to OpenAI...")
         completion = client.chat.completions.create(
-            model="gpt-4o", # Using a more advanced model for creative tasks
+            model="openai/gpt-4o", # Using a more advanced model for creative tasks
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": final_user_prompt}
@@ -74,7 +77,7 @@ def ask_chatbot_direct(prompt):
         print("Sending direct prompt to OpenAI...")
 
         completion = client.chat.completions.create(
-            model="gpt-4o",
+            model="openai/gpt-4o",
             messages=[
                 {"role": "user", "content": prompt}
             ]
