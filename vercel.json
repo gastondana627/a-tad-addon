@@ -1,9 +1,17 @@
 {
   "buildCommand": "npm run build:netlify",
   "outputDirectory": "dist",
-  "framework": null,
   "installCommand": "npm install",
+  "framework": null,
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.12"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/brand",       "destination": "/api/brand.py" },
+    { "source": "/api/process-url", "destination": "/api/process-url.py" },
+    { "source": "/api/chat",        "destination": "/api/chat.py" },
+    { "source": "/((?!api/).*)",    "destination": "/index.html" }
   ]
 }
